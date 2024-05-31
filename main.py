@@ -1,4 +1,6 @@
-import time
+
+    pg.display.flip()
+    clock.tick(fps)import time
 
 import pygame as pg
 import random
@@ -168,13 +170,7 @@ background_menu = pg.transform.scale(background_menu, SIZE)
 is_play = False
 
 # ВРЕМЕННЫЙ КОД для запуска без меню
-screen_notes = pg.sprite.Group()
-created_notes = 0
-next_note = 0
-timer = time.time()
-mode = "play"
-playing_song = song1
-is_play = True
+mode = "menu"
 
 while True:
     for event in pg.event.get():
@@ -186,14 +182,47 @@ while True:
                 if event.button == 1:
                     mode = "menu"
 
+
+
     if mode == "menu":
         is_play = True
 
         # выключить музыку при выходе в меню
         if isinstance(sound, pg.mixer.Sound):
             sound.stop()
+        mouse_pos=pg.mouse.get_pos()
 
-        # место для отрисовки меню
+        for song in Song.songs:
+            if song.rect.collidepoint(mouse_pos):
+                song.color='green'
+            else:
+                song.color='red'
+
+            if pg.mouse.get_pressed()[0]:
+                screen_notes = pg.sprite.Group()
+                created_notes = 0
+                next_note = 0
+                timer = time.time()
+                # playing_song = song1
+                for song in Song.songs:
+                    if song.rect.collidepoint(mouse_pos):
+                        playing_song=song
+                        mode='play'
+
+
+
+        y=1
+        screen.blit(background_menu,(0,0))
+        for song in Song.songs:
+            pg.draw.rect(screen,pg.Color(song.color),song.rect,3)
+            screen.blit(song.text,(30,100*y+5))
+            y+=1
+
+
+
+
+
+
 
     if mode == "play":
         if is_play:  # только если сейчас идёт игра - нет проигрыша или победы
@@ -230,5 +259,14 @@ while True:
                 screen.blit(text, text_rect)
                 is_play = False
 
+
+        for note in screen_notes:
+            if note.rect.y>500 and not note.played:
+                text=f1.render('ПРОИГРЫШ',True,pg.Color('red'))
+                text_rect=text.get_rect(center=(SIZE[0]//2,SIZE[1]//2))
+                screen.blit(text,text_rect)
+                is_play=False
+
     pg.display.flip()
     clock.tick(fps)
+
